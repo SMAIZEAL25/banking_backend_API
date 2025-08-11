@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BankingApp.Application.DTOs;
 using BankingApp.Domain.Entities;
+using BankingApp.Infrastruture.Integration.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;

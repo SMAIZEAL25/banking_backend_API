@@ -20,7 +20,7 @@ namespace BankingApp.Application.Handlers
             GetAccountTransactionHistoryQuery request,
             CancellationToken cancellationToken)
         {
-            // Adjust method/property name to match UnitOfWork
+           
             return await _unitOfWork.GetAccountingHistory
                 .GetAccountTransactionHistoryAsync(request.AccountNumber);
         }

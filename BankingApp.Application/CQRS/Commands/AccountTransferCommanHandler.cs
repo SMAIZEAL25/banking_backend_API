@@ -25,7 +25,7 @@ public class AccountTransferCommandHandler
         AccountTransferCommand request,
         CancellationToken cancellationToken)
     {
-        // The service just executes business logic, no response formatting
+      
         var result = await _accountTransfer.AccountTransferAsync(request.TransferRequest);
 
         if (result == null)

@@ -1,11 +1,12 @@
-﻿// BankingApp.Infrastructure/Repositories/AccountingHistoryRepository.cs
+﻿
 using AutoMapper;
 using BankingApp.Application.DTOs;
+using BankingApp.Application.Interfaces;
 using BankingApp.Application.Response;
 using BankingApp.Domain.Entities;
 using BankingApp.Domain.Enums;
-using BankingApp.Application.Interfaces;
 using BankingApp.Infrastructure.Persistence;
+using BankingApp.Infrastructure.StoreProcedures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,95 +25,167 @@ namespace BankingApp.Infrastructure.Repositories
             _mapper = mapper;
         }
 
-        public async Task<CustomResponse<IEnumerable<TransactionHistoryDto>>> GetAccountTransactionHistoryAsync(string accountNumber)
-        {
-            _logger.LogInformation("Fetching transaction history for account {AccountNumber}", accountNumber);
-
-            var account = await _context.Set<Account>()
-                .Include(a => a.Transactions)
-                .ThenInclude(t => t.User)
-                .AsNoTracking()
-                .SingleOrDefaultAsync(a => a.AccountNumber == accountNumber);
-
-            if (account == null)
-            {
-                _logger.LogWarning("Account {AccountNumber} not found", accountNumber);
-                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Fail("Account not found.");
-            }
-
-            if (account.AccountStatus == AccountStatus.Closed)
-            {
-                _logger.LogWarning("Account {AccountNumber} is closed", accountNumber);
-                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Fail("This account is closed.");
-            }
-
-            var threeWeeksAgo = DateTime.UtcNow.AddDays(-21);
-
-            var transactions = account.Transactions
-                .Where(t => t.TransactionDate >= threeWeeksAgo)
-                .ToList();
-
-            var transactionDtos = _mapper.Map<List<TransactionHistoryDto>>(transactions);
-
-            foreach (var dto in transactionDtos)
-            {
-                dto.AccountName = account.AccountName;
-            }
-
-            _logger.LogInformation("Retrieved {Count} transactions for account {AccountNumber}", transactionDtos.Count, accountNumber);
-
-            return CustomResponse<IEnumerable<TransactionHistoryDto>>.Success(transactionDtos);
-        }
-
         public async Task<CustomResponse<IEnumerable<TransactionHistoryDto>>> GetMonthlyTransactionStatementAsync(string accountNumber, int numberOfMonths)
         {
-            _logger.LogInformation("Fetching {Months}-month transaction statement for account {AccountNumber}", numberOfMonths, accountNumber);
-
-            var account = await _context.Set<Account>()
-                .AsNoTracking()
-                .SingleOrDefaultAsync(a => a.AccountNumber == accountNumber);
-
-            if (account == null)
+            try
             {
-                _logger.LogWarning("Account {AccountNumber} not found", accountNumber);
-                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Fail("Account not found.");
-            }
+                if (numberOfMonths <= 0)
+                {
+                    _logger.LogWarning("Invalid month count {Months} requested for account {AccountNumber}",
+                        numberOfMonths, accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.BadRequest("Number of months must be positive");
+                }
 
-            if (account.AccountStatus == AccountStatus.Closed)
+                _logger.LogInformation("Fetching {Months}-month transaction statement for account {AccountNumber}",
+                    numberOfMonths, accountNumber);
+
+                var account = await _context.Set<Account>()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(a => a.AccountNumber == accountNumber);
+
+                if (account == null)
+                {
+                    _logger.LogWarning("Account {AccountNumber} not found", accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.NotFound("Account not found");
+                }
+
+                if (account.AccountStatus == AccountStatus.Closed)
+                {
+                    _logger.LogWarning("Account {AccountNumber} is closed", accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.Forbidden("This account is closed");
+                }
+
+                var startDate = DateTime.UtcNow.AddMonths(-numberOfMonths);
+
+                List<Transaction> rawTransactionResults;
+                try
+                {
+                    rawTransactionResults = await ExecuteStoredProcedureForMonthlyStatements(accountNumber, startDate);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to execute stored procedure for account {AccountNumber}", accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.ServerError("Failed to retrieve transactions");
+                }
+
+                var transactionResults = _mapper.Map<List<TransactionHistoryDto>>(rawTransactionResults);
+
+                foreach (var dto in transactionResults)
+                {
+                    dto.AccountName = account.AccountName;
+                    dto.AccountNumber = accountNumber; // Ensure account number is included
+                }
+
+                if (!transactionResults.Any())
+                {
+                    _logger.LogInformation("No transactions found for account {AccountNumber} in last {Months} months",
+                        accountNumber, numberOfMonths);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.Success(
+                        transactionResults,
+                        $"No transactions found for the past {numberOfMonths} months");
+                }
+
+                _logger.LogInformation("Successfully retrieved {Count} transactions for account {AccountNumber}",
+                    transactionResults.Count, accountNumber);
+
+                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Success(transactionResults);
+            }
+            catch (Exception ex)
             {
-                _logger.LogWarning("Account {AccountNumber} is closed", accountNumber);
-                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Fail("This account is closed.");
+                _logger.LogError(ex, "Unexpected error while fetching transactions for account {AccountNumber}",
+                    accountNumber);
+                return CustomResponse<IEnumerable<TransactionHistoryDto>>.ServerError("An unexpected error occurred");
             }
+        }
 
-            var startDate = DateTime.UtcNow.AddMonths(-numberOfMonths);
-
-            var rawTransactionResults = await ExecuteStoredProcedureForMonthlyStatements(accountNumber, startDate);
-
-            var transactionResults = _mapper.Map<List<TransactionHistoryDto>>(rawTransactionResults);
-
-            foreach (var dto in transactionResults)
+        //GetAccout Trasaction History For only 5 weeks
+        public async Task<CustomResponse<IEnumerable<TransactionHistoryDto>>> GetAccountTransactionHistoryAsync(string accountNumber)
+        {
+            try
             {
-                dto.AccountName = account.AccountName;
-            }
+                const int numberOfWeeks = 5;
+                _logger.LogInformation("Fetching {Weeks}-week transaction history for account {AccountNumber}",
+                    numberOfWeeks, accountNumber);
 
-            if (transactionResults.Count == 0)
+                var account = await _context.Set<Account>()
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(a => a.AccountNumber == accountNumber);
+
+                if (account == null)
+                {
+                    _logger.LogWarning("Account {AccountNumber} not found", accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.NotFound("Account not found");
+                }
+
+                if (account.AccountStatus == AccountStatus.Closed)
+                {
+                    _logger.LogWarning("Account {AccountNumber} is closed", accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.Forbidden("This account is closed");
+                }
+
+                var startDate = DateTime.UtcNow.AddDays(-(numberOfWeeks * 7));
+
+                List<Transaction> rawTransactionResults;
+                try
+                {
+                    rawTransactionResults = await ExecuteStoredProcedureForWeeklyStatements(accountNumber, startDate);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to execute stored procedure for account {AccountNumber}", accountNumber);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.ServerError("Failed to retrieve transactions");
+                }
+
+                var transactionResults = _mapper.Map<List<TransactionHistoryDto>>(rawTransactionResults);
+
+                foreach (var dto in transactionResults)
+                {
+                    dto.AccountName = account.AccountName;
+                    dto.AccountNumber = accountNumber; // Ensure account number is included
+                }
+
+                if (!transactionResults.Any())
+                {
+                    _logger.LogInformation("No transactions found for account {AccountNumber} in last {Weeks} weeks",
+                        accountNumber, numberOfWeeks);
+                    return CustomResponse<IEnumerable<TransactionHistoryDto>>.Success(
+                        transactionResults,
+                        $"No transactions found for the past {numberOfWeeks} weeks");
+                }
+
+                _logger.LogInformation("Successfully retrieved {Count} transactions for account {AccountNumber}",
+                    transactionResults.Count, accountNumber);
+
+                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Success(transactionResults);
+            }
+            catch (Exception ex)
             {
-                _logger.LogInformation("No transactions found for account {AccountNumber} in last {Months} months", accountNumber, numberOfMonths);
-                return CustomResponse<IEnumerable<TransactionHistoryDto>>.Fail($"No records found for the past {numberOfMonths} months.");
+                _logger.LogError(ex, "Unexpected error while fetching transactions for account {AccountNumber}", accountNumber);
+                return CustomResponse<IEnumerable<TransactionHistoryDto>>.ServerError("An unexpected error occurred");
             }
+        }
 
-            _logger.LogInformation("Retrieved {Count} monthly transactions for account {AccountNumber}", transactionResults.Count, accountNumber);
+        private async Task<List<Transaction>> ExecuteStoredProcedureForWeeklyStatements(string accountNumber, DateTime startDate)
+        {
+            _logger.LogDebug("Executing weekly transaction stored procedure for account {AccountNumber} from {StartDate}",
+                accountNumber, startDate);
 
-            return CustomResponse<IEnumerable<TransactionHistoryDto>>.Success(transactionResults);
+            return await _context.Set<Transaction>()
+                .FromSqlRaw($"{StoredProcedureScripts.GetWeeklyTransactionStatements} EXEC GetWeeklyTransactionStatements @AccountNumber = {{0}}, @StartDate = {{1}}",
+                            accountNumber, startDate)
+                .ToListAsync();
         }
 
         private async Task<List<Transaction>> ExecuteStoredProcedureForMonthlyStatements(string accountNumber, DateTime startDate)
         {
-            _logger.LogDebug("Executing stored procedure for account {AccountNumber} from {StartDate}", accountNumber, startDate);
+            _logger.LogDebug("Executing monthly transaction stored procedure for account {AccountNumber} from {StartDate}",
+                accountNumber, startDate);
 
             return await _context.Set<Transaction>()
-                .FromSqlRaw("EXEC GetMonthlyTransactionStatements @AccountNumber = {0}, @StartDate = {1}", accountNumber, startDate)
+                .FromSqlRaw("EXEC GetMonthlyTransactionStatements @AccountNumber = {0}, @StartDate = {1}",
+                            accountNumber, startDate)
                 .ToListAsync();
         }
+
     }
 }

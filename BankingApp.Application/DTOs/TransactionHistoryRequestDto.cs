@@ -17,6 +17,7 @@ namespace BankingApp.Application.DTOs
         public string BeneficiaryName { get; set; }
         public string BeneficiaryAccountNumber { get; set; }
         public string AccountName { get; set; }
+        public string AccountNumber { get; set; }
         public string BeneficiaryBankName { get; set; }
         public string TransactionStatus { get; set; }
     }

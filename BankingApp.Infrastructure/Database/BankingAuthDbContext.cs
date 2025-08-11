@@ -51,6 +51,6 @@ using Microsoft.EntityFrameworkCore;
             }
 
         }
-    }// Compare this snippet from IRecharge_API/Program.cs:
+    }
 
 

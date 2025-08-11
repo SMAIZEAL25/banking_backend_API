@@ -1,40 +1,39 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Collections.Concurrent;
-using System.Threading.RateLimiting;
+﻿
+using BankingApp.Application.Interfaces;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
+namespace BankingApp.Infrastructure.Middleware;
 
-namespace BankingApp.Infrastructure.RateLimiter
+public class RateLimitingMiddleware
 {
-    public class RateLimitingMiddleware
+    private readonly RequestDelegate _next;
+    private readonly IRateLimiter _rateLimiter;
+
+    public RateLimitingMiddleware(RequestDelegate next, IRateLimiter rateLimiter)
     {
-        private readonly RequestDelegate _next;
-        private readonly IRateLimiter _rateLimiter;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _rateLimiter = rateLimiter ?? throw new ArgumentNullException(nameof(rateLimiter));
+    }
 
-        public RateLimitingMiddleware(RequestDelegate next, IRateLimiter rateLimiter)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var clientIdentifier = context.Connection.RemoteIpAddress?.ToString();
+
+        if (string.IsNullOrEmpty(clientIdentifier))
         {
-            _next = next;
-            _rateLimiter = rateLimiter;
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsync("Client identifier missing");
+            return;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        if (!_rateLimiter.IsRequestAllowed(clientIdentifier))
         {
-            // Get client identifier (could be IP, API key, etc.)
-            var clientIdentifier = context.Connection.RemoteIpAddress?.ToString();
-
-            if (string.IsNullOrEmpty(clientIdentifier))
-            {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
-            if (!_rateLimiter.IsRequestAllowed(clientIdentifier))
-            {
-                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                await context.Response.WriteAsync("Too many request exceeded. Please try again later.");
-                return;
-            }
-
-            await _next(context);
+            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            await context.Response.WriteAsync("Rate limit exceeded. Please try again later.");
+            return;
         }
+
+        await _next(context);
     }
 }

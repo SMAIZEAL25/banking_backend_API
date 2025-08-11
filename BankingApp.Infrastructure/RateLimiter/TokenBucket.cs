@@ -1,5 +1,12 @@
-﻿namespace IRecharge_API1.RateLimiter
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BankingApp.Infrastructure.RateLimiter
 {
+
     public class TokenBucket
     {
         private readonly int _capacity;
@@ -18,13 +25,11 @@
         public bool TryConsume()
         {
             Refill();
-
             if (_currentTokens >= 1)
             {
                 _currentTokens -= 1;
                 return true;
             }
-
             return false;
         }
 
@@ -33,9 +38,9 @@
             var now = DateTime.UtcNow;
             var timeElapsed = (now - _lastRefillTime).TotalSeconds;
             var tokensToAdd = timeElapsed * _refillRatePerSecond;
-
             _currentTokens = Math.Min(_capacity, _currentTokens + tokensToAdd);
             _lastRefillTime = now;
         }
     }
 }
+

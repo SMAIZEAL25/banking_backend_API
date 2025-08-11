@@ -1,6 +1,6 @@
 ﻿using BankingApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders; // Add this using directive
+using Microsoft.EntityFrameworkCore.Metadata.Builders; 
 
 namespace BankingApp.Infrastructure.Persistence
 {
@@ -21,7 +21,7 @@ namespace BankingApp.Infrastructure.Persistence
                 .HasIndex(u => u.Email)
                 .IsUnique();
             modelBuilder.Entity<User>()
-                .Ignore(u => u.FullName); // Computed property, no DB column
+                .Ignore(u => u.FullName); 
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Accounts)

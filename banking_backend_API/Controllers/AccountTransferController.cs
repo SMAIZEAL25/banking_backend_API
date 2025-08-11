@@ -21,7 +21,7 @@ public class TransfersController : ControllerBase
             var response = await _mediator.Send(new AccountTransferCommand(dto));
             return StatusCode(response.StatusCode, response);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // log error
             return StatusCode(500, new { Message = "An error occurred while processing transfer." });

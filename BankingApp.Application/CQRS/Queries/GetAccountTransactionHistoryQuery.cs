@@ -1,4 +1,4 @@
-﻿// BankingApp.Application/Queries/GetAccountTransactionHistoryQuery.cs
+﻿
 using BankingApp.Application.DTOs;
 using BankingApp.Application.Response;
 using MediatR;
