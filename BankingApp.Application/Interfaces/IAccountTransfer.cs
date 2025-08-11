@@ -7,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankingApp.Infrastructure.Services.Interfaces
+namespace BankingApp.Application.Interfaces
 {
     public interface IAccountTransfer
     {
-        Task<CustomResponse<TransferResult>> AccountTransferAsync(TransferRequestDto transferRequestDto)
+        Task<CustomResponse<TransferResult>> AccountTransferAsync(TransferRequestDto transferRequestDto);
     }
 }

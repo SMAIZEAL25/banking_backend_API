@@ -1,9 +1,9 @@
 ﻿// Infrastructure/Services/BankingService.cs
 using AutoMapper;
 using BankingApp.Domain.Entities;
+using BankingApp.Application.Interfaces;
 using BankingApp.Infrastruture.Database;
 using BankingApp.Infrastruture.Redis;
-using BankingApp.Infrastruture.Services.Interface;
 using Microsoft.Extensions.Logging;
 
 public class BankingService : IBankingService

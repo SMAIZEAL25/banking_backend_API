@@ -1,7 +1,7 @@
 ﻿using BankingApp.Application.DTOs;
 using BankingApp.Application.Response;
 using BankingApp.Domain.Enums;
-using BankingApp.Infrastruture.Services;
+using BankingApp.Application.Interfaces;
 using FluentValidation;
 
 namespace BankingApp.Application.Commands

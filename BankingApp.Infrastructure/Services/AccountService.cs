@@ -2,8 +2,8 @@
 using BankingApp.Application.DTOs;
 using BankingApp.Domain.Entities;
 using BankingApp.Domain.Enums;
+using BankingApp.Application.Interfaces;
 using BankingApp.Infrastruture.Database;
-using BankingApp.Infrastruture.Services.Interface;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 

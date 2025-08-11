@@ -4,8 +4,8 @@ using BankingApp.Application.DTOs;
 using BankingApp.Application.Response;
 using BankingApp.Domain.Entities;
 using BankingApp.Domain.Enums;
+using BankingApp.Application.Interfaces;
 using BankingApp.Infrastructure.Persistence;
-using BankingApp.Infrastruture.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

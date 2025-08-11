@@ -1,21 +1,20 @@
-﻿// IUnitOfWork.cs
+﻿using BankingApp.Application.Interfaces;
 using BankingApp.Domain.Entities;
 using BankingApp.Infrastruture.Repostries.IRepositories;
-using BankingApp.Infrastruture.Services.Interface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace BankingApp.Infrastruture.Database
+namespace BankingApp.Application.Interfaces
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
-        // Generic Repositories
         IRepository<User> Users { get; }
         IRepository<Transaction> Transactions { get; }
-
-        // Specific Repositories
         IAccountRepository Accounts { get; }
 
-        // Services
         IBankingService BankingService { get; }
         IAccountServices AccountServices { get; }
         IViewAccountBalance ViewAccountBalance { get; }

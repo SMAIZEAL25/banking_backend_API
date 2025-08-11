@@ -1,11 +1,12 @@
 ﻿using BankingApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders; // Add this using directive
 
 namespace BankingApp.Infrastructure.Persistence
 {
     public class BankingDbContext : DbContext
     {
-        public BankingDbContext(DbContextOptions<BankingDbContext> options): base(options) { }
+        public BankingDbContext(DbContextOptions<BankingDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -76,7 +77,7 @@ namespace BankingApp.Infrastructure.Persistence
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)
                 .HasColumnType("decimal(18,2)");
-             
+
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.CurrentBalance)
                 .HasColumnType("decimal(18,2)");
@@ -93,7 +94,6 @@ namespace BankingApp.Infrastructure.Persistence
 
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.BeneficiaryBank)
-                .HasConversion<string>()
                 .HasMaxLength(50);
         }
     }

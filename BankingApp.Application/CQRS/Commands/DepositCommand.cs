@@ -1,6 +1,11 @@
 ﻿
 using AutoMapper;
+using BankingApp.Application.DTOs;
 using BankingApp.Application.Response;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using BankingApp.Application.Interfaces;
+
 
 public class DepositCommand : IRequest<CustomResponse<DepositResponseDto>>
 {

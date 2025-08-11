@@ -2,9 +2,9 @@
 using BankingApp.Application.DTOs;
 using BankingApp.Domain.Entities;
 using BankingApp.Domain.Enums;
+using BankingApp.Application.Interfaces;
 using BankingApp.Infrastruture.Redis;
 using BankingApp.Infrastruture.Repostries.IRepositories;
-using BankingApp.Infrastruture.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Serilog;

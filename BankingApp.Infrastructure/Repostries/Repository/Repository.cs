@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using BankingApp.Domain.Entities;
+using BankingApp.Infrastructure.Persistence;
 using BankingApp.Infrastruture.Database;
 using BankingApp.Infrastruture.Repostries.IRepositories;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 

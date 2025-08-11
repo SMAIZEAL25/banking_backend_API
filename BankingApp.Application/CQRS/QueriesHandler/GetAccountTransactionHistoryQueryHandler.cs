@@ -1,8 +1,8 @@
-﻿// BankingApp.Application/Handlers/GetAccountTransactionHistoryQueryHandler.cs
-using BankingApp.Application.DTOs;
+﻿using BankingApp.Application.DTOs;
 using BankingApp.Application.Queries;
 using BankingApp.Application.Response;
 using MediatR;
+using BankingApp.Application.Interfaces;
 
 namespace BankingApp.Application.Handlers
 {
@@ -17,9 +17,11 @@ namespace BankingApp.Application.Handlers
         }
 
         public async Task<CustomResponse<IEnumerable<TransactionHistoryDto>>> Handle(
-            GetAccountTransactionHistoryQuery request, CancellationToken cancellationToken)
+            GetAccountTransactionHistoryQuery request,
+            CancellationToken cancellationToken)
         {
-            return await _unitOfWork.AccountingHistory
+            // Adjust method/property name to match UnitOfWork
+            return await _unitOfWork.GetAccountingHistory
                 .GetAccountTransactionHistoryAsync(request.AccountNumber);
         }
     }
@@ -35,9 +37,10 @@ namespace BankingApp.Application.Handlers
         }
 
         public async Task<CustomResponse<IEnumerable<TransactionHistoryDto>>> Handle(
-            GetMonthlyTransactionStatementQuery request, CancellationToken cancellationToken)
+            GetMonthlyTransactionStatementQuery request,
+            CancellationToken cancellationToken)
         {
-            return await _unitOfWork.AccountingHistory
+            return await _unitOfWork.GetAccountingHistory
                 .GetMonthlyTransactionStatementAsync(request.AccountNumber, request.NumberOfMonths);
         }
     }

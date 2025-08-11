@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using BankingApp.Domain.Entities;
+using BankingApp.Application.Interfaces;
 using BankingApp.Infrastructure.Persistence;
-using BankingApp.Infrastruture.Database;
 using BankingApp.Infrastruture.Repostries.Repository;
-using BankingApp.Infrastruture.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
