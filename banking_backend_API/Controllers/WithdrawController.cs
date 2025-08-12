@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace banking_backend_API.Controllers
 {
-    public class WithdrawController
+    public class WithdrawController : Controller
     {
         private readonly IMediator _mediator;
 

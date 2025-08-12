@@ -14,11 +14,13 @@ namespace BankingApp.Infrastruture.Repostries.Repository
     {
         private readonly BankingDbContext _bankingDb;
         private readonly IMapper _mapper;
+        private readonly DbSet<T> _dbSet;
 
         public Repository(BankingDbContext bankingDb, IMapper mapper)
         {
             _bankingDb = bankingDb;
             _mapper = mapper;
+            _dbSet = bankingDb.Set<T>();
         }
         public async Task<T> AddAsync(T entity)
         {
@@ -44,7 +46,7 @@ namespace BankingApp.Infrastruture.Repostries.Repository
             var response = await _bankingDb.Set<IEnumerable<T>>().FindAsync(id);
 
             return response;
-        }        
+        }
 
 
         public async Task<IEnumerable<T>> GetAllAsync()
@@ -67,6 +69,11 @@ namespace BankingApp.Infrastruture.Repostries.Repository
         public async Task<T> GetSingleOrDefaultAsync(Expression<Func<T, bool>> predicate)
         {
             return await _bankingDb.Set<T>().AsNoTracking().SingleOrDefaultAsync(predicate);
+        }
+
+        public IQueryable<T> Query()
+        {
+            return _dbSet.AsQueryable();  
         }
 
 

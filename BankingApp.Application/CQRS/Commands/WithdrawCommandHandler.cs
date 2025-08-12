@@ -29,7 +29,7 @@ namespace BankingApp.Application.Features.Transactions.Withdrawal
 
         public async Task<WithdrawResponseDto> Handle(WithdrawCommand request, CancellationToken cancellationToken)
         {
-            var account = await _accountRepository.GetByAccountNumberAsync(request.Request.AccountNumber);
+            var account = await _accountRepository.GetAccountByNumberAsync(request.Request.AccountNumber);
             if (account == null)
             {
                 return new WithdrawResponseDto
@@ -39,7 +39,7 @@ namespace BankingApp.Application.Features.Transactions.Withdrawal
                 };
             }
 
-            if (account.Balance < request.Request.Amount)
+            if (account.CurrentBalance < request.Request.Amount)
             {
                 return new WithdrawResponseDto
                 {
@@ -49,12 +49,12 @@ namespace BankingApp.Application.Features.Transactions.Withdrawal
             }
 
             // Deduct the amount
-            account.Balance -= request.Request.Amount;
+            account.CurrentBalance -= request.Request.Amount;
 
             // Create transaction
             var transaction = new Transaction
             {
-                AccountId = account.Id,
+                AccountId = account.AccountId,
                 Amount = request.Request.Amount,
                 TransactionType = TransactionType.Debit,
                 CurrencyTypes = request.Request.CurrencyTypes,
@@ -62,8 +62,8 @@ namespace BankingApp.Application.Features.Transactions.Withdrawal
             };
 
             await _accountRepository.UpdateAsync(account);
-            await _unitOfWork.TransactionRepository.AddAsync(transaction);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.Transactions.AddAsync(transaction);
+            await _unitOfWork.CommitAsync();
 
             _logger.LogInformation(
                 "Withdrawal successful for {AccountNumber}, Amount: {Amount} {Currency}",
@@ -73,7 +73,7 @@ namespace BankingApp.Application.Features.Transactions.Withdrawal
             {
                 Success = true,
                 Message = "Withdrawal successful.",
-                UpdatedBalance = account.Balance
+                UpdatedBalance = account.CurrentBalance
             };
         }
     }

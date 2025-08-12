@@ -2,7 +2,6 @@
 using AutoMapper;
 using BankingApp.Domain.Entities;
 using BankingApp.Application.Interfaces;
-using BankingApp.Infrastruture.Database;
 using BankingApp.Infrastruture.Redis;
 using Microsoft.Extensions.Logging;
 

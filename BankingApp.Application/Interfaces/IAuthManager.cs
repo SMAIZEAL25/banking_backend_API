@@ -8,6 +8,7 @@ namespace BankingApp.Application.Interfaces
     public interface IAuthManager
     {
         Task<AuthResponse> LoginAsync(LoginRequest request);
-        //Task<IEnumerable<IdentityError>> RegisterAsync(RegisterRequest request);
+      
+        Task<RegistrationResponse> RegisterAsync(RegisterRequest request, string role = "Reader");
     }
 }

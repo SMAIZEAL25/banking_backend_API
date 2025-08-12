@@ -25,20 +25,7 @@ namespace BankingApp.Domain.Entities
         [Required]
         public DateTime DateOfBirth { get; set; }
 
-        // becomes read only after the user is created
-        //public int Age
-        //{
-        //    get
-        //    {
-        //        if (DateOfBirth == default)
-        //            return 0;
-
-        //        var today = DateTime.Today;
-        //        var age = today.Year - DateOfBirth.Year;
-        //        if (DateOfBirth.Date > today.AddYears(-age)) age--;
-        //        return age;
-        //    }
-        //}
+        
 
 
         [Required]

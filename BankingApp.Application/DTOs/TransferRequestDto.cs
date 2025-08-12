@@ -11,7 +11,7 @@ namespace BankingApp.Application.DTOs
     {
         public string AccountNumber { get; set; }
         public string BeneficiaryName { get; set; }
-        public long BeneficiaryAccountNumber { get; set; }
+        public string BeneficiaryAccountNumber { get; set; }
         public decimal Amount { get; set; }
         public BankName BeneficiaryBank { get; set; }
         public CurrencyTypes Currency { get; set; }

@@ -2,7 +2,7 @@
 using BankingApp.Domain.Enums;
 using FluentValidation;
 using System;
-using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace BankingApp.Application.Validators
 {
@@ -22,7 +22,8 @@ namespace BankingApp.Application.Validators
                 .WithMessage("Phone number must be in Nigerian format e.g. +234xxxxxxxxxx");
 
             RuleFor(x => x.StateOfOrigin)
-                .NotEmpty().Must(BeAValidNigerianState)
+                .NotEmpty()
+                .Must(BeAValidNigerianState)
                 .WithMessage("Invalid Nigerian state");
 
             RuleFor(x => x.DateOfBirth)
@@ -30,19 +31,14 @@ namespace BankingApp.Application.Validators
                 .WithMessage("User must be at least 18 years old");
         }
 
-        private bool BeAtLeast18YearsOld(DateTime dob)
+        private bool BeAtLeast18YearsOld(DateTime dateOfBirth)
         {
-            return dob <= DateTime.Today.AddYears(-18);
+            return dateOfBirth <= DateTime.Today.AddYears(-18);
         }
 
-        private bool BeAValidNigerianState(string state)
+        private bool BeAValidNigerianState(NigerianStates state)
         {
-            var states = new[]
-            {
-                "Lagos", "Abuja", "Kano", "Enugu", "Kaduna", "Oyo", "Rivers"
-                // Add all Nigerian states...
-            };
-            return states.Contains(state, StringComparer.OrdinalIgnoreCase);
+            return Enum.IsDefined(typeof(NigerianStates), state);
         }
     }
 }

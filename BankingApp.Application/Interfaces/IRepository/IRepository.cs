@@ -18,5 +18,6 @@ namespace BankingApp.Infrastruture.Repostries.IRepositories
         Task<IEnumerable<T>> GetByIdAsync(int? id);   
         Task<IEnumerable<T>> GetAllAsync();
         Task<T> GetSingleOrDefaultAsync(Expression<Func<T, bool>> predicate);
+        IQueryable<T> Query();
     }
 }

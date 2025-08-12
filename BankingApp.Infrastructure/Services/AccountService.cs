@@ -3,9 +3,9 @@ using BankingApp.Application.DTOs;
 using BankingApp.Domain.Entities;
 using BankingApp.Domain.Enums;
 using BankingApp.Application.Interfaces;
-using BankingApp.Infrastruture.Database;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.Infrastruture.Services
 {
@@ -38,8 +38,8 @@ namespace BankingApp.Infrastruture.Services
         {
             // Check if user already exists by email
             var existingUser = await _unitOfWork.Users
-                .Query()
-      .FirstOrDefaultAsync(u => u.Email == userDto.Email);
+        .Query()
+        .FirstOrDefaultAsync(u => u.Email == userDto.Email);
 
             User userEntity;
             if (existingUser != null)

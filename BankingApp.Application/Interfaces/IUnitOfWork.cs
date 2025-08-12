@@ -13,13 +13,13 @@ namespace BankingApp.Application.Interfaces
     {
         IRepository<User> Users { get; }
         IRepository<Transaction> Transactions { get; }
+        IRepository<Account> Account { get; }
         IAccountRepository Accounts { get; }
-
         IBankingService BankingService { get; }
         IAccountServices AccountServices { get; }
         IViewAccountBalance ViewAccountBalance { get; }
         IAccountingHistoryRepository GetAccountingHistory { get; }
 
-        Task<int> CommitAsync();
+        Task<int> CommitAsync(); 
     }
 }

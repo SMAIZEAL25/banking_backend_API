@@ -26,7 +26,7 @@ namespace BankingApp.API.Controllers
             try
             {
                 var result = await _mediator.Send(new GetAccountTransactionHistoryQuery(accountNumber));
-                return result.Success ? Ok(result) : NotFound(result);
+                return result.IsSuccess ? Ok(result) : NotFound(result);
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace BankingApp.API.Controllers
             try
             {
                 var result = await _mediator.Send(new GetMonthlyTransactionStatementQuery(accountNumber, months));
-                return result.Success ? Ok(result) : NotFound(result);
+                return result.IsSuccess ? Ok(result) : NotFound(result);
             }
             catch (Exception ex)
             {

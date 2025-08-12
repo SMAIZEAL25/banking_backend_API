@@ -36,7 +36,7 @@ namespace banking_backend_API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-           
+
             builder.Host.UseSerilog((ctx, lc) =>
             {
                 lc.ReadFrom.Configuration(ctx.Configuration);
@@ -45,20 +45,20 @@ namespace banking_backend_API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
-       
+
             builder.Services.AddDbContext<BankingDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 
             builder.Services.AddDbContext<BankingAuthDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("IRechargeAuthDB")));
 
-       
+
             builder.Services.AddIdentityCore<IdentityUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<BankingAuthDbContext>()
                 .AddDefaultTokenProviders();
 
-          
+
             var jwtKey = builder.Configuration["JwtSettings:Key"];
             var issuer = builder.Configuration["JwtSettings:Issuer"];
             var audience = builder.Configuration["JwtSettings:Audience"];
@@ -85,7 +85,7 @@ namespace banking_backend_API
                 };
             });
 
-            
+
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new() { Title = "Banking API", Version = "v1" });
@@ -112,16 +112,16 @@ namespace banking_backend_API
                 });
             });
 
-         
+
             builder.Services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
                 options.InstanceName = "BankingApp_";
             });
-            
+
             builder.Services.AddSingleton<ICacheService, RedisCacheService>();
 
-     
+
             builder.Services.AddHttpClient<IPaymentGateway, PaystackService>(client =>
             {
                 client.BaseAddress = new Uri("https://api.paystack.co");
@@ -146,51 +146,52 @@ namespace banking_backend_API
 
             builder.Services.AddHealthChecksUI(options =>
             {
-                options.AddHealthCheckEndpoint("API", "/health");
                 options.AddHealthCheckEndpoint("Main DB", "/health/main-db");
                 options.AddHealthCheckEndpoint("Auth DB", "/health/auth-db");
                 options.SetEvaluationTimeInSeconds(30);
             })
-            .AddSqlServerStorage(healthChecksUIConn);
+       .AddInMemoryStorage();
 
-           
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
 
-            
+
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
             builder.Services.AddScoped<IAccountingHistoryRepository, AccountingHistoryRepository>();
 
-          
+
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        
+
             builder.Services.AddScoped<IAccountTransfer, AccountTransfer>();
             builder.Services.AddScoped<IBankingService, BankingService>();
             builder.Services.AddScoped<IViewAccountBalance, ViewAccountBalance>();
-            
 
-          
+
+
             builder.Services.AddScoped<IAuthManager, AuthManager>();
 
             builder.Services.AddAutoMapper(typeof(MappinConfigs));
 
-        
-            builder.Services.AddFluentValidationAutoValidation(); 
+
+            builder.Services.AddFluentValidationAutoValidation();
             builder.Services.AddValidatorsFromAssemblyContaining<AccountOpeningValidator>();
 
-            builder.Services.AddSingleton<IRateLimiter>(new TokenBucketRateLimiter(maxRequests: 100,timeWindowInSeconds: 60));
+            builder.Services.AddSingleton<IRateLimiter>(new TokenBucketRateLimiter(maxRequests: 100, timeWindowInSeconds: 60));
 
 
-            builder.Services.AddMediatR(cfg =>cfg.RegisterServicesFromAssemblyContaining<GetAccountTransactionHistoryQueryHandler>());
-
-            var app = builder.Build();
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetAccountTransactionHistoryQueryHandler>());
 
             
+
+                var app = builder.Build();
+
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -201,13 +202,13 @@ namespace banking_backend_API
             app.UseHttpsRedirection();
             app.UseCors("AllowAll");
 
-          
+
             app.UseMiddleware<RateLimitingMiddleware>();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-      
+
             app.MapHealthChecks("/health", new HealthCheckOptions
             {
                 Predicate = _ => true,
