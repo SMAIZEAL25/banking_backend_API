@@ -1,5 +1,6 @@
 ﻿using BankingApp.Application.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,6 +10,7 @@ namespace BankingApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AccountsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -21,6 +23,7 @@ namespace BankingApp.API.Controllers
         }
 
         [HttpGet("{accountNumber}/transactions")]
+        [Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetTransactionHistory(string accountNumber)
         {
             try
@@ -36,6 +39,7 @@ namespace BankingApp.API.Controllers
         }
 
         [HttpGet("{accountNumber}/monthly-statement/{months}")]
+        [Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetMonthlyStatement(string accountNumber, int months)
         {
             try

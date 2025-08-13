@@ -24,7 +24,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         { 
-            // Log exception and return generic error
+            
             return StatusCode(500, new { message = "Internal server error", details = ex.Message });
         }
     }

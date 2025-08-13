@@ -2,11 +2,7 @@
 using BankingApp.Domain.Entities;
 using BankingApp.Infrastructure.Persistence;
 using BankingApp.Infrastruture.Repostries.IRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BankingApp.Infrastructure.UnitOfWork
 {
@@ -19,7 +15,6 @@ namespace BankingApp.Infrastructure.UnitOfWork
         public IRepository<Transaction> Transactions { get; }
         public IRepository<Account> Account { get; }
         public IAccountRepository Accounts { get; }
-
         public IBankingService BankingService { get; }
         public IAccountServices AccountServices { get; }
         public IViewAccountBalance ViewAccountBalance { get; }

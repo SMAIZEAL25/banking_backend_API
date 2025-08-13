@@ -1,9 +1,11 @@
 ﻿using BankingApp.Application.DTOs;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize] 
 public class TransfersController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -13,7 +15,9 @@ public class TransfersController : ControllerBase
         _mediator = mediator;
     }
 
+   
     [HttpPost("transfer")]
+    [Authorize(Roles = "Writer")] 
     public async Task<IActionResult> Transfer([FromBody] TransferRequestDto dto)
     {
         try
